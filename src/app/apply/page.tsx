@@ -713,6 +713,7 @@ function StepDocuments({
   documents: UploadedDocument[];
   setDocuments: (docs: UploadedDocument[]) => void;
 }) {
+  const docs = documents ?? [];
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -745,7 +746,7 @@ function StepDocuments({
         return;
       }
 
-      setDocuments([...documents, data as UploadedDocument]);
+      setDocuments([...docs, data as UploadedDocument]);
     } catch {
       setUploadError("Upload failed. Please try again.");
     } finally {
@@ -760,7 +761,7 @@ function StepDocuments({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, applicationToken }),
       });
-      setDocuments(documents.filter((d) => d.id !== id));
+      setDocuments(docs.filter((d) => d.id !== id));
     } catch {
       // Silently fail — user can retry
     }
@@ -848,13 +849,13 @@ function StepDocuments({
         )}
 
         {/* Uploaded files list */}
-        {documents.length > 0 && (
+        {docs.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium">
-              Uploaded ({documents.length})
+              Uploaded ({docs.length})
             </p>
             <ul className="space-y-2">
-              {documents.map((doc) => (
+              {docs.map((doc) => (
                 <li
                   key={doc.id}
                   className="flex items-center justify-between rounded-md border px-3 py-2"
@@ -1000,9 +1001,9 @@ function StepReview({
 
         {/* Documents */}
         <ReviewSection title="Documents" onEdit={() => goToStep(4)}>
-          {data.uploadedDocuments.length > 0 ? (
+          {(data.uploadedDocuments ?? []).length > 0 ? (
             <>
-              {data.uploadedDocuments.map((doc) => (
+              {(data.uploadedDocuments ?? []).map((doc) => (
                 <React.Fragment key={doc.id}>
                   <dt className="text-sm text-muted-foreground">
                     <FileText className="inline size-3.5 mr-1" />
