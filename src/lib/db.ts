@@ -18,7 +18,11 @@ function createPrismaClient() {
 
 // Invalidate cached client if the schema has changed (e.g. after prisma generate)
 // by checking that expected model accessors exist on the cached instance.
-if (globalForPrisma.prisma && !("document" in globalForPrisma.prisma)) {
+if (
+  globalForPrisma.prisma &&
+  (!("document" in globalForPrisma.prisma) ||
+    !("loanApplication" in globalForPrisma.prisma))
+) {
   globalForPrisma.prisma = undefined;
 }
 

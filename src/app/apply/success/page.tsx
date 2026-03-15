@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -10,12 +13,9 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export default async function SuccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ ref?: string }>;
-}) {
-  const { ref } = await searchParams;
+export default function SuccessPage() {
+  const searchParams = useSearchParams();
+  const ref = searchParams.get("ref");
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
