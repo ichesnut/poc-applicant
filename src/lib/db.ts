@@ -16,6 +16,12 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
+// Invalidate cached client if the schema has changed (e.g. after prisma generate)
+// by checking that expected model accessors exist on the cached instance.
+if (globalForPrisma.prisma && !("document" in globalForPrisma.prisma)) {
+  globalForPrisma.prisma = undefined;
+}
+
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
