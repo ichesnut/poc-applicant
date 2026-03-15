@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { register, type AuthState } from "@/lib/auth-actions";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ const initialState: AuthState = {};
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(register, initialState);
+  const searchParams = useSearchParams();
+  const prefillEmail = searchParams.get("email") ?? "";
 
   return (
     <div className="mx-auto max-w-sm space-y-6 py-12">
@@ -43,6 +46,8 @@ export default function RegisterPage() {
             name="email"
             type="email"
             placeholder="you@example.com"
+            defaultValue={prefillEmail}
+            readOnly={!!prefillEmail}
             required
           />
           {state.fieldErrors?.email && (
