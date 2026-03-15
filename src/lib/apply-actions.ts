@@ -59,7 +59,7 @@ export async function submitApplication(
       where: { email: formData.email },
     });
 
-    await prisma.loanApplication.create({
+    const application = await prisma.loanApplication.create({
       data: {
         referenceId,
         status: "SUBMITTED",
@@ -90,6 +90,14 @@ export async function submitApplication(
         submittedAt: new Date(),
       },
     });
+
+    // Link any uploaded documents to the loan application
+    if (formData.applicationToken) {
+      await prisma.document.updateMany({
+        where: { applicationToken: formData.applicationToken },
+        data: { loanApplicationId: application.id },
+      });
+    }
 
     // If no existing user, send registration invite email
     if (!existingUser) {

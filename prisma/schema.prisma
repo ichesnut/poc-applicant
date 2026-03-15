@@ -63,7 +63,24 @@ model LoanApplication {
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
 
-  user User? @relation(fields: [userId], references: [id])
+  documents Document[]
+  user      User?      @relation(fields: [userId], references: [id])
+}
+
+model Document {
+  id                String           @id @default(cuid())
+  applicationToken  String
+  loanApplicationId String?
+  fileName          String
+  fileType          String
+  fileSize          Int
+  storagePath       String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  loanApplication LoanApplication? @relation(fields: [loanApplicationId], references: [id])
+
+  @@index([applicationToken])
 }
 
 model Account {

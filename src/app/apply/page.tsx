@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronLeft, ChevronRight, Upload, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Upload, Loader2, FileText, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   type LoanFormData,
+  type UploadedDocument,
   initialFormData,
   STEP_LABELS,
   LOAN_TERMS,
@@ -161,7 +162,15 @@ export default function ApplyPage() {
             fieldError={fieldError}
           />
         )}
-        {currentStep === 4 && <StepDocuments />}
+        {currentStep === 4 && (
+          <StepDocuments
+            applicationToken={formData.applicationToken}
+            documents={formData.uploadedDocuments}
+            setDocuments={(docs) =>
+              setFormData((prev) => ({ ...prev, uploadedDocuments: docs }))
+            }
+          />
+        )}
         {currentStep === 5 && (
           <StepReview
             data={formData}
@@ -695,7 +704,92 @@ function StepFinancial({ data, update, fieldError }: StepProps) {
   );
 }
 
-function StepDocuments() {
+function StepDocuments({
+  applicationToken,
+  documents,
+  setDocuments,
+}: {
+  applicationToken: string;
+  documents: UploadedDocument[];
+  setDocuments: (docs: UploadedDocument[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  async function uploadFile(file: File) {
+    setUploadError(null);
+
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("File type not allowed. Please upload PDF, JPG, or PNG.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File exceeds 10MB limit.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("applicationToken", applicationToken);
+
+      const res = await fetch("/api/documents", { method: "POST", body });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setUploadError(data.error || "Upload failed.");
+        return;
+      }
+
+      setDocuments([...documents, data as UploadedDocument]);
+    } catch {
+      setUploadError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function removeDocument(id: string) {
+    try {
+      await fetch("/api/documents", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, applicationToken }),
+      });
+      setDocuments(documents.filter((d) => d.id !== id));
+    } catch {
+      // Silently fail — user can retry
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    for (const file of files) {
+      uploadFile(file);
+    }
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    for (const file of files) {
+      uploadFile(file);
+    }
+    // Reset so the same file can be selected again
+    e.target.value = "";
+  }
+
+  function formatSize(bytes: number) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   return (
     <>
       <CardHeader>
@@ -705,18 +799,87 @@ function StepDocuments() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
-          <Upload className="mx-auto size-10 text-muted-foreground mb-3" />
+        {/* Drop zone */}
+        <div
+          className={cn(
+            "rounded-lg border-2 border-dashed p-8 text-center transition-colors cursor-pointer",
+            dragOver
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50"
+          )}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploading ? (
+            <Loader2 className="mx-auto size-10 text-muted-foreground mb-3 animate-spin" />
+          ) : (
+            <Upload className="mx-auto size-10 text-muted-foreground mb-3" />
+          )}
           <p className="text-sm">
-            Drag &amp; drop files here, or{" "}
-            <span className="text-primary underline cursor-pointer">
-              browse files
-            </span>
+            {uploading ? (
+              "Uploading..."
+            ) : (
+              <>
+                Drag &amp; drop files here, or{" "}
+                <span className="text-primary underline">browse files</span>
+              </>
+            )}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             PDF, JPG, PNG up to 10MB each
           </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
         </div>
+
+        {uploadError && (
+          <p className="text-sm text-destructive">{uploadError}</p>
+        )}
+
+        {/* Uploaded files list */}
+        {documents.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">
+              Uploaded ({documents.length})
+            </p>
+            <ul className="space-y-2">
+              {documents.map((doc) => (
+                <li
+                  key={doc.id}
+                  className="flex items-center justify-between rounded-md border px-3 py-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="text-sm truncate">{doc.fileName}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {formatSize(doc.fileSize)}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 size-8 p-0"
+                    onClick={() => removeDocument(doc.id)}
+                  >
+                    <X className="size-4" />
+                    <span className="sr-only">Remove</span>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="text-sm text-muted-foreground space-y-1">
           <p className="font-medium text-foreground">Recommended documents:</p>
@@ -726,11 +889,6 @@ function StepDocuments() {
             <li>Bank statements (last 3 months)</li>
           </ul>
         </div>
-
-        <p className="text-sm text-muted-foreground italic">
-          Document upload will be available in a future update. You may continue
-          without uploading documents.
-        </p>
       </CardContent>
     </>
   );
@@ -842,9 +1000,23 @@ function StepReview({
 
         {/* Documents */}
         <ReviewSection title="Documents" onEdit={() => goToStep(4)}>
-          <p className="text-sm text-muted-foreground italic">
-            No documents uploaded
-          </p>
+          {data.uploadedDocuments.length > 0 ? (
+            <>
+              {data.uploadedDocuments.map((doc) => (
+                <React.Fragment key={doc.id}>
+                  <dt className="text-sm text-muted-foreground">
+                    <FileText className="inline size-3.5 mr-1" />
+                    File
+                  </dt>
+                  <dd className="text-sm font-medium">{doc.fileName}</dd>
+                </React.Fragment>
+              ))}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground italic col-span-2">
+              No documents uploaded
+            </p>
+          )}
         </ReviewSection>
 
         {/* Certification */}

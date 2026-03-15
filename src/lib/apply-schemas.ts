@@ -167,7 +167,7 @@ export const financialSchema = z.object({
     .min(0, "Monthly expenses cannot be negative"),
 });
 
-// Step 5: Documents (placeholder - no validation needed)
+// Step 5: Documents (optional — no required fields, but tracks uploaded doc IDs)
 export const documentsSchema = z.object({});
 
 // Step 6: Review (certification)
@@ -176,6 +176,13 @@ export const reviewSchema = z.object({
     message: "You must certify that your information is accurate",
   }),
 });
+
+export type UploadedDocument = {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+};
 
 // Combined form data type
 export type LoanFormData = {
@@ -205,6 +212,9 @@ export type LoanFormData = {
   totalAssets: number | "";
   totalDebts: number | "";
   monthlyExpenses: number | "";
+  // Step 5 (documents)
+  applicationToken: string;
+  uploadedDocuments: UploadedDocument[];
   // Step 6
   certified: boolean;
 };
@@ -232,6 +242,10 @@ export const initialFormData: LoanFormData = {
   totalAssets: "",
   totalDebts: "",
   monthlyExpenses: "",
+  applicationToken: typeof globalThis.crypto !== "undefined"
+    ? globalThis.crypto.randomUUID()
+    : "",
+  uploadedDocuments: [],
   certified: false,
 };
 
