@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Applicant — Loan Application Portal",
+  title: "Tesseract Financial — Loan Application Portal",
   description: "Submit and track your loan applications",
 };
 
