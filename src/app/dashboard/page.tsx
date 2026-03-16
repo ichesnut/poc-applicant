@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NewApplicationLink } from "./new-application-link";
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Draft", className: "bg-gray-100 text-gray-700" },
@@ -64,9 +64,7 @@ export default async function DashboardPage() {
             Welcome back, {session.user.name ?? session.user.email}.
           </p>
         </div>
-        <Link href="/apply" className={cn(buttonVariants())}>
-          New Application
-        </Link>
+        <NewApplicationLink />
       </div>
 
       {applications.length === 0 ? (
