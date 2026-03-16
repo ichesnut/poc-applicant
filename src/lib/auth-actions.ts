@@ -46,8 +46,14 @@ export async function register(
 
   const hashedPassword = await hash(password, 12);
 
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: { name, email, hashedPassword },
+  });
+
+  // Link any existing loan applications submitted with this email
+  await prisma.loanApplication.updateMany({
+    where: { email, userId: null },
+    data: { userId: newUser.id },
   });
 
   // Auto sign-in after registration

@@ -51,7 +51,12 @@ export default async function DashboardPage() {
   }
 
   const applications = await prisma.loanApplication.findMany({
-    where: { userId: session.user.id },
+    where: {
+      OR: [
+        { userId: session.user.id },
+        { email: session.user.email!, userId: null },
+      ],
+    },
     orderBy: { createdAt: "desc" },
   });
 

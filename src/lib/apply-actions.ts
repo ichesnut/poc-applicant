@@ -115,7 +115,12 @@ export async function submitApplication(
       console.error("Failed to sync application to loan officer app:", syncError);
     }
 
-    return { success: true, referenceId };
+    return {
+      success: true,
+      referenceId,
+      isNewUser: !existingUser,
+      email: !existingUser ? formData.email : undefined,
+    };
   } catch (error) {
     console.error("Failed to submit application:", error);
     return { success: false, error: "Failed to submit application. Please try again." };

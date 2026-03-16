@@ -113,7 +113,11 @@ export default function ApplyPage() {
     const result = await submitApplication(formData);
     setSubmitting(false);
     if (result.success) {
-      router.push(`/apply/success?ref=${result.referenceId}`);
+      const params = new URLSearchParams({ ref: result.referenceId });
+      if (result.isNewUser && result.email) {
+        params.set("email", result.email);
+      }
+      router.push(`/apply/success?${params.toString()}`);
     } else {
       setSubmitError(result.error);
     }
