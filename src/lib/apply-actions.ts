@@ -12,7 +12,7 @@ import {
 } from "@/lib/apply-schemas";
 
 export type SubmitResult =
-  | { success: true; referenceId: string }
+  | { success: true; referenceId: string; isNewUser?: boolean; email?: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
 export async function submitApplication(
@@ -108,9 +108,64 @@ export async function submitApplication(
       });
     }
 
+    // Sync to loan officer app (best-effort, don't fail the applicant submission)
+    try {
+      await syncToLoanOfficer(formData, referenceId);
+    } catch (syncError) {
+      console.error("Failed to sync application to loan officer app:", syncError);
+    }
+
     return { success: true, referenceId };
   } catch (error) {
     console.error("Failed to submit application:", error);
     return { success: false, error: "Failed to submit application. Please try again." };
+  }
+}
+
+async function syncToLoanOfficer(
+  formData: LoanFormData,
+  referenceId: string
+): Promise<void> {
+  const syncUrl = process.env.LOAN_OFFICER_SYNC_URL;
+  const syncKey = process.env.SYNC_API_KEY;
+
+  if (!syncUrl || !syncKey) {
+    console.warn("Loan officer sync not configured (LOAN_OFFICER_SYNC_URL or SYNC_API_KEY missing)");
+    return;
+  }
+
+  const response = await fetch(syncUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-sync-api-key": syncKey,
+    },
+    body: JSON.stringify({
+      referenceId,
+      loanAmount: Number(formData.loanAmount),
+      loanTerm: Number(formData.loanTerm),
+      loanPurpose: formData.loanPurpose,
+      purposeOther: formData.purposeOther || null,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      dateOfBirth: formData.dateOfBirth,
+      street: formData.street,
+      apartment: formData.apartment || null,
+      city: formData.city,
+      state: formData.state,
+      zipCode: formData.zipCode,
+      employmentStatus: formData.employmentStatus,
+      employerName: formData.employerName || null,
+      jobTitle: formData.jobTitle || null,
+      annualIncome: Number(formData.annualIncome),
+      yearsAtJob: formData.yearsAtJob ? Number(formData.yearsAtJob) : null,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sync failed (${response.status}): ${body}`);
   }
 }
