@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronLeft, ChevronRight, Upload, Loader2, FileText, X } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Upload, Loader2, FileText, X, Wand2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,6 +129,62 @@ export default function ApplyPage() {
     ) : null;
   }
 
+  function getDemoDataForStep(step: number): Partial<LoanFormData> {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+    switch (step) {
+      case 0:
+        return {
+          loanAmount: 25000,
+          loanTerm: 36,
+          loanPurpose: "Home improvement",
+          purposeOther: "",
+        };
+      case 1:
+        return {
+          firstName: "Jane",
+          lastName: "Doe",
+          dateOfBirth: "1990-06-15",
+          email: `ichesnut+${timestamp}@gmail.com`,
+          phone: "(555) 867-5309",
+          street: "123 Main Street",
+          apartment: "",
+          city: "Austin",
+          state: "TX",
+          zipCode: "78701",
+        };
+      case 2:
+        return {
+          employmentStatus: "Employed",
+          employerName: "Acme Corp",
+          jobTitle: "Software Engineer",
+          annualIncome: 95000,
+          yearsAtJob: 3,
+        };
+      case 3:
+        return {
+          totalAssets: 150000,
+          totalDebts: 12000,
+          monthlyExpenses: 3200,
+        };
+      case 4:
+        // Documents step — nothing to auto-fill
+        return {};
+      case 5:
+        return { certified: true };
+      default:
+        return {};
+    }
+  }
+
+  function handleFill() {
+    const demoData = getDemoDataForStep(currentStep);
+    setFormData((prev) => ({ ...prev, ...demoData }));
+    setErrors({});
+  }
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold tracking-tight">Apply for a Loan</h1>
@@ -193,14 +249,18 @@ export default function ApplyPage() {
           )}
           <Separator className="mb-6" />
           <div className="flex justify-between">
-            {currentStep > 0 ? (
-              <Button variant="outline" onClick={handlePrevious}>
-                <ChevronLeft className="size-4 mr-1" />
-                Previous
+            <div className="flex gap-2">
+              {currentStep > 0 && (
+                <Button variant="outline" onClick={handlePrevious}>
+                  <ChevronLeft className="size-4 mr-1" />
+                  Previous
+                </Button>
+              )}
+              <Button variant="secondary" size="sm" onClick={handleFill}>
+                <Wand2 className="size-4 mr-1" />
+                Fill
               </Button>
-            ) : (
-              <div />
-            )}
+            </div>
 
             {currentStep < STEP_LABELS.length - 1 ? (
               <Button onClick={handleContinue}>
