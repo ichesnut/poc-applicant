@@ -12,7 +12,7 @@ import {
 } from "@/lib/apply-schemas";
 
 export type SubmitResult =
-  | { success: true; referenceId: string; isNewUser?: boolean; email?: string }
+  | { success: true; referenceId: string; isNewUser?: boolean; email?: string; firstName?: string; lastName?: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
 export async function submitApplication(
@@ -120,6 +120,8 @@ export async function submitApplication(
       referenceId,
       isNewUser: !existingUser,
       email: !existingUser ? formData.email : undefined,
+      firstName: !existingUser ? formData.firstName : undefined,
+      lastName: !existingUser ? formData.lastName : undefined,
     };
   } catch (error) {
     console.error("Failed to submit application:", error);

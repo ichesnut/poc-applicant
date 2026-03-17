@@ -116,6 +116,8 @@ export default function ApplyPage() {
       const params = new URLSearchParams({ ref: result.referenceId });
       if (result.isNewUser && result.email) {
         params.set("email", result.email);
+        if (result.firstName) params.set("firstName", result.firstName);
+        if (result.lastName) params.set("lastName", result.lastName);
       }
       router.push(`/apply/success?${params.toString()}`);
     } else {

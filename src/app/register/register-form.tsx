@@ -14,6 +14,9 @@ export function RegisterForm() {
   const [state, action, pending] = useActionState(register, initialState);
   const searchParams = useSearchParams();
   const prefillEmail = searchParams.get("email") ?? "";
+  const firstName = searchParams.get("firstName") ?? "";
+  const lastName = searchParams.get("lastName") ?? "";
+  const prefillName = [firstName, lastName].filter(Boolean).join(" ");
 
   return (
     <div className="mx-auto max-w-sm space-y-6 py-12">
@@ -33,7 +36,7 @@ export function RegisterForm() {
 
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" placeholder="Your name" required />
+          <Input id="name" name="name" placeholder="Your name" defaultValue={prefillName} required />
           {state.fieldErrors?.name && (
             <p className="text-xs text-destructive">{state.fieldErrors.name[0]}</p>
           )}

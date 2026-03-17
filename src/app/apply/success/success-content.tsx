@@ -17,6 +17,8 @@ export function SuccessContent() {
   const searchParams = useSearchParams();
   const ref = searchParams.get("ref");
   const email = searchParams.get("email");
+  const firstName = searchParams.get("firstName");
+  const lastName = searchParams.get("lastName");
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -53,7 +55,7 @@ export function SuccessContent() {
                 application status.
               </p>
               <Link
-                href={`/register?email=${encodeURIComponent(email)}`}
+                href={`/register?email=${encodeURIComponent(email)}${firstName ? `&firstName=${encodeURIComponent(firstName)}` : ""}${lastName ? `&lastName=${encodeURIComponent(lastName)}` : ""}`}
                 className={cn(buttonVariants(), "mt-3")}
               >
                 Create Account
