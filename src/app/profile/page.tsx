@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { CopiableText } from "@/components/copiable-text";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -20,7 +21,9 @@ export default async function ProfilePage() {
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Email</p>
-          <p className="text-lg font-medium">{session.user.email}</p>
+          <p className="text-lg font-medium">
+            <CopiableText value={session.user.email ?? ""} />
+          </p>
         </div>
       </div>
 

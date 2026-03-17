@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { CopiableText } from "@/components/copiable-text";
 import { NewApplicationLink } from "./new-application-link";
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -87,7 +88,9 @@ export default async function DashboardPage() {
               <Card key={app.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>{app.referenceId}</CardTitle>
+                    <CardTitle>
+                      <CopiableText value={app.referenceId} />
+                    </CardTitle>
                     <span
                       className={cn(
                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",

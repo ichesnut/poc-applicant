@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -34,11 +35,12 @@ export function SuccessContent() {
         </CardHeader>
         <CardContent className="space-y-4">
           {ref && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground inline-flex items-center gap-1">
               Reference ID:{" "}
               <span className="font-mono font-semibold text-foreground">
                 {ref}
               </span>
+              <CopyButton value={ref} />
             </p>
           )}
           <p className="text-sm text-muted-foreground">

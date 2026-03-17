@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronLeft, ChevronRight, Upload, Loader2, FileText, X, Wand2 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1035,7 +1036,7 @@ function StepReview({
                 : "—"
             }
           />
-          <ReviewRow label="Email" value={data.email || "—"} />
+          <ReviewRow label="Email" value={data.email || "—"} copiable />
           <ReviewRow label="Phone" value={data.phone || "—"} />
           <ReviewRow
             label="Address"
@@ -1156,11 +1157,14 @@ function ReviewSection({
   );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
+function ReviewRow({ label, value, copiable }: { label: string; value: string; copiable?: boolean }) {
   return (
     <>
       <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium">{value}</dd>
+      <dd className="text-sm font-medium inline-flex items-center gap-1">
+        {value}
+        {copiable && value && value !== "—" && <CopyButton value={value} />}
+      </dd>
     </>
   );
 }
