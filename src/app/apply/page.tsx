@@ -132,47 +132,69 @@ export default function ApplyPage() {
   }
 
   function getDemoDataForStep(step: number): Partial<LoanFormData> {
+    const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
+    const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
     const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;
 
+    const firstNames = ["Jane", "John", "Maria", "James", "Sarah", "Michael", "Emily", "David", "Olivia", "Robert", "Sophia", "Carlos", "Aisha", "Wei", "Priya"];
+    const lastNames = ["Smith", "Johnson", "Garcia", "Williams", "Brown", "Jones", "Martinez", "Davis", "Rodriguez", "Wilson", "Anderson", "Thomas", "Lee", "Patel", "Kim"];
+    const streets = ["123 Main Street", "456 Oak Avenue", "789 Elm Drive", "321 Cedar Lane", "555 Maple Court", "901 Pine Road", "247 Birch Boulevard", "612 Walnut Way"];
+    const cities: [string, string, string][] = [
+      ["Austin", "TX", "78701"], ["Denver", "CO", "80202"], ["Portland", "OR", "97201"],
+      ["Nashville", "TN", "37201"], ["Raleigh", "NC", "27601"], ["Seattle", "WA", "98101"],
+      ["Chicago", "IL", "60601"], ["Phoenix", "AZ", "85001"], ["Miami", "FL", "33101"],
+    ];
+    const employers = ["Acme Corp", "Globex Industries", "Initech", "Umbrella Co", "Wayne Enterprises", "Stark Industries", "Hooli", "Piedmont Health"];
+    const jobTitles = ["Software Engineer", "Product Manager", "Marketing Director", "Data Analyst", "Project Manager", "UX Designer", "Financial Analyst", "Operations Lead"];
+
     switch (step) {
-      case 0:
+      case 0: {
+        const amounts = [5000, 10000, 15000, 25000, 50000, 75000, 100000, 150000];
         return {
-          loanAmount: 25000,
-          loanTerm: 36,
-          loanPurpose: "Home improvement",
+          loanAmount: pick(amounts),
+          loanTerm: pick(LOAN_TERMS),
+          loanPurpose: pick(LOAN_PURPOSES.filter(p => p !== "Other")),
           purposeOther: "",
         };
-      case 1:
+      }
+      case 1: {
+        const [city, state, zip] = pick(cities);
+        const dobYear = randInt(1960, 2000);
+        const dobMonth = pad(randInt(1, 12));
+        const dobDay = pad(randInt(1, 28));
         return {
-          firstName: "Jane",
-          lastName: "Doe",
-          dateOfBirth: "1990-06-15",
+          firstName: pick(firstNames),
+          lastName: pick(lastNames),
+          dateOfBirth: `${dobYear}-${dobMonth}-${dobDay}`,
           email: `ichesnut+${timestamp}@gmail.com`,
-          phone: "(555) 867-5309",
-          street: "123 Main Street",
-          apartment: "",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
+          phone: `(555) ${randInt(200, 999)}-${pad(randInt(0, 99))}${pad(randInt(0, 99))}`,
+          street: pick(streets),
+          apartment: Math.random() > 0.7 ? `Apt ${randInt(1, 20)}` : "",
+          city,
+          state,
+          zipCode: zip,
         };
-      case 2:
+      }
+      case 2: {
+        const status = pick(["Employed", "Self-employed"] as const);
         return {
-          employmentStatus: "Employed",
-          employerName: "Acme Corp",
-          jobTitle: "Software Engineer",
-          annualIncome: 95000,
-          yearsAtJob: 3,
+          employmentStatus: status,
+          employerName: pick(employers),
+          jobTitle: pick(jobTitles),
+          annualIncome: randInt(4, 20) * 10000,
+          yearsAtJob: randInt(1, 15),
         };
+      }
       case 3:
         return {
-          totalAssets: 150000,
-          totalDebts: 12000,
-          monthlyExpenses: 3200,
+          totalAssets: randInt(2, 50) * 10000,
+          totalDebts: randInt(0, 10) * 5000,
+          monthlyExpenses: randInt(15, 80) * 100,
         };
       case 4:
-        // Documents step — nothing to auto-fill
         return {};
       case 5:
         return { certified: true };
