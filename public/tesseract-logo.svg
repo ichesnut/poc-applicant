@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <style>
+    .outer { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+    .inner { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+    .edge  { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; opacity: 0.45; }
+    .node  { fill: currentColor; r: 2; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.45; }
+      50%      { opacity: 0.85; }
+    }
+    @keyframes rotate-outer {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes rotate-inner {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+    .edge  { animation: pulse 3s ease-in-out infinite; }
+    .outer-group { transform-origin: 24px 24px; animation: rotate-outer 20s linear infinite; }
+    .inner-group { transform-origin: 24px 24px; animation: rotate-inner 28s linear infinite; }
+  </style>
+
+  <!-- Outer cube (larger square projected) -->
+  <g class="outer-group">
+    <polygon class="outer" points="6,6 42,6 42,42 6,42" />
+    <circle class="node" cx="6"  cy="6"  />
+    <circle class="node" cx="42" cy="6"  />
+    <circle class="node" cx="42" cy="42" />
+    <circle class="node" cx="6"  cy="42" />
+  </g>
+
+  <!-- Inner cube (smaller square projected) -->
+  <g class="inner-group">
+    <polygon class="inner" points="16,16 32,16 32,32 16,32" />
+    <circle class="node" cx="16" cy="16" />
+    <circle class="node" cx="32" cy="16" />
+    <circle class="node" cx="32" cy="32" />
+    <circle class="node" cx="16" cy="32" />
+  </g>
+
+  <!-- Connecting edges (4D projection lines) -->
+  <line class="edge" x1="6"  y1="6"  x2="16" y2="16" />
+  <line class="edge" x1="42" y1="6"  x2="32" y2="16" />
+  <line class="edge" x1="42" y1="42" x2="32" y2="32" />
+  <line class="edge" x1="6"  y1="42" x2="16" y2="32" />
+</svg>
